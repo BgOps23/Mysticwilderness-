@@ -1,0 +1,6 @@
+{
+  "summary":  "Phase 2 implementation plan for Items & Inventory: items.json schema with 10 placeholder items, pure-Kotlin InventoryLogic with listener-based InventoryChanged events, ECS dropped items with auto-pickup and magnet physics, 5-slot bottom-center hotbar, 20-slot inventory modal with side-by-side grid and right-side detail card, drag-and-drop + tap-to-move interactions, and debug starter items tool.",
+  "updatedAt":  "2026-11-01T14:26:14.939824745Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

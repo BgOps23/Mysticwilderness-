@@ -1,0 +1,93 @@
+[
+  {
+    "id": "grass",
+    "name": "Grass Meadow",
+    "textureRegion": "tile_grass",
+    "solid": false,
+    "walkable": true
+  },
+  {
+    "id": "dirt_path",
+    "name": "Dirt Path",
+    "textureRegion": "tile_dirt",
+    "solid": false,
+    "walkable": true
+  },
+  {
+    "id": "stone_floor",
+    "name": "Stone Floor",
+    "textureRegion": "tile_stone_floor",
+    "solid": false,
+    "walkable": true
+  },
+  {
+    "id": "cave_ground",
+    "name": "Dark Cave Ground",
+    "textureRegion": "tile_cave_ground",
+    "solid": false,
+    "walkable": true
+  },
+  {
+    "id": "water",
+    "name": "Clear Water",
+    "textureRegion": "tile_water",
+    "solid": true,
+    "walkable": false
+  },
+  {
+    "id": "tree_trunk",
+    "name": "Forest Tree Trunk",
+    "textureRegion": "tile_tree_trunk",
+    "solid": true,
+    "walkable": false
+  },
+  {
+    "id": "tree_top",
+    "name": "Forest Tree Canopy",
+    "textureRegion": "tile_tree_top",
+    "solid": false,
+    "walkable": true
+  },
+  {
+    "id": "rock_boulder",
+    "name": "Rock Boulder",
+    "textureRegion": "tile_rock",
+    "solid": true,
+    "walkable": false
+  },
+  {
+    "id": "cave_wall",
+    "name": "Cave Rock Wall",
+    "textureRegion": "tile_cave_wall",
+    "solid": true,
+    "walkable": false
+  },
+  {
+    "id": "border_wall",
+    "name": "Perimeter Boundary",
+    "textureRegion": "tile_border_wall",
+    "solid": true,
+    "walkable": false
+  },
+  {
+    "id": "wooden_floor",
+    "name": "Wood Planks",
+    "textureRegion": "tile_wood_floor",
+    "solid": false,
+    "walkable": true
+  },
+  {
+    "id": "cabin_wall",
+    "name": "Cabin Log Wall",
+    "textureRegion": "tile_cabin_wall",
+    "solid": true,
+    "walkable": false
+  },
+  {
+    "id": "roof_thatch",
+    "name": "Thatch Roof",
+    "textureRegion": "tile_roof",
+    "solid": false,
+    "walkable": true
+  }
+]

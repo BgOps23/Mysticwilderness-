@@ -1,0 +1,137 @@
+[
+  {
+    "id": "wood",
+    "name": "Wood Log",
+    "description": "Sturdy timber chopped from forest trees. Essential for crafting and construction.",
+    "category": "resource",
+    "maxStack": 99,
+    "baseValue": 2,
+    "iconRegion": "item_wood",
+    "tags": ["resource", "wood", "material"]
+  },
+  {
+    "id": "stone",
+    "name": "Rough Stone",
+    "description": "Heavy stones collected from rocky outcrops. Used for tools and sturdy structures.",
+    "category": "resource",
+    "maxStack": 99,
+    "baseValue": 2,
+    "iconRegion": "item_stone",
+    "tags": ["resource", "stone", "material"]
+  },
+  {
+    "id": "plant_fiber",
+    "name": "Plant Fiber",
+    "description": "Tough botanical fibers harvested from wilderness foliage. Used for cordage and weaving.",
+    "category": "resource",
+    "maxStack": 99,
+    "baseValue": 1,
+    "iconRegion": "item_plant_fiber",
+    "tags": ["resource", "fiber", "material"]
+  },
+  {
+    "id": "berries",
+    "name": "Wild Berries",
+    "description": "Sweet, juicy berries gathered from shrubs. Restores a small amount of vitality.",
+    "category": "consumable",
+    "maxStack": 30,
+    "baseValue": 3,
+    "iconRegion": "item_berries",
+    "tags": ["food", "foraged"],
+    "consumable": {
+      "effects": [
+        {
+          "stat": "health",
+          "amount": 10.0
+        }
+      ]
+    }
+  },
+  {
+    "id": "rabbit_meat",
+    "name": "Raw Rabbit",
+    "description": "Lean game meat. Nutritious and filling when cooked over a campfire.",
+    "category": "consumable",
+    "maxStack": 20,
+    "baseValue": 8,
+    "iconRegion": "item_rabbit_meat",
+    "tags": ["food", "meat"],
+    "consumable": {
+      "effects": [
+        {
+          "stat": "health",
+          "amount": 25.0
+        }
+      ]
+    }
+  },
+  {
+    "id": "stone_axe",
+    "name": "Stone Axe",
+    "description": "A crude axe fashioned from river stone and bound with fiber. Effective for felling trees.",
+    "category": "tool",
+    "maxStack": 1,
+    "baseValue": 15,
+    "iconRegion": "item_stone_axe",
+    "tags": ["tool", "axe", "chopping"],
+    "tool": {
+      "type": "axe",
+      "tier": 1,
+      "power": 1.5
+    }
+  },
+  {
+    "id": "stone_pickaxe",
+    "name": "Stone Pickaxe",
+    "description": "A pointed stone head lashed to a hardwood branch. Good for breaking boulders and mining.",
+    "category": "tool",
+    "maxStack": 1,
+    "baseValue": 15,
+    "iconRegion": "item_stone_pickaxe",
+    "tags": ["tool", "pickaxe", "mining"],
+    "tool": {
+      "type": "pickaxe",
+      "tier": 1,
+      "power": 1.5
+    }
+  },
+  {
+    "id": "campfire",
+    "name": "Campfire",
+    "description": "A comforting ring of stones with dry logs. Provides warmth, light, and a place to cook.",
+    "category": "placeable",
+    "maxStack": 5,
+    "baseValue": 10,
+    "iconRegion": "item_campfire",
+    "tags": ["placeable", "furniture", "light"],
+    "placeable": {
+      "structureId": "campfire"
+    }
+  },
+  {
+    "id": "wooden_wall",
+    "name": "Wood Wall",
+    "description": "A reinforced wooden partition to shelter your base from the wilderness.",
+    "category": "placeable",
+    "maxStack": 50,
+    "baseValue": 5,
+    "iconRegion": "item_wooden_wall",
+    "tags": ["placeable", "building", "wall"],
+    "placeable": {
+      "structureId": "wooden_wall"
+    }
+  },
+  {
+    "id": "bed",
+    "name": "Simple Bed",
+    "description": "A cozy thatch mattress on a wooden frame. Rest here to sleep through the cold night.",
+    "category": "placeable",
+    "maxStack": 1,
+    "baseValue": 25,
+    "iconRegion": "item_bed",
+    "tags": ["placeable", "furniture", "comfort"],
+    "placeable": {
+      "structureId": "bed"
+    }
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "name": "Remix Mystic Wilderness",
+  "description": "Cozy 2D top-down open-world survival RPG with base building, built with libGDX, LibKTX, and Fleks ECS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
