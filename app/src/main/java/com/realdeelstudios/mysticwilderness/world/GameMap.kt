@@ -19,6 +19,8 @@ class GameMap(
         Chunk(cx, cy, chunkSize)
     }
 
+    var nodeSpatialIndex: NodeSpatialIndex? = null
+
     val widthInPx: Float = widthInTiles * GameConfig.TILE_SIZE
     val heightInPx: Float = heightInTiles * GameConfig.TILE_SIZE
 
@@ -45,7 +47,7 @@ class GameMap(
     }
 
     /**
-     * Unified solidity query checking all layers and map boundaries.
+     * Unified solidity query checking all layers, map boundaries, and dynamic blocking nodes.
      * Guaranteed safe: returns true (solid) for any out-of-bounds coordinates.
      */
     fun isTileSolid(tileX: Int, tileY: Int): Boolean {
@@ -53,26 +55,26 @@ class GameMap(
             return true // Map perimeter boundary is solid
         }
         val chunk = getChunk(tileX / chunkSize, tileY / chunkSize) ?: return true
-        return chunk.isSolidAt(tileX % chunkSize, tileY % chunkSize)
+        if (chunk.isSolidAt(tileX % chunkSize, tileY % chunkSize)) {
+            return true
+        }
+        return nodeSpatialIndex?.isTileBlocked(tileX, tileY) ?: false
     }
 
     /**
      * Generates the cozy 96x96 placeholder open world:
      * - Grassy meadow with dirt paths
-     * - Forest tree-line with solid trunks and sorting canopies
-     * - Dark rocky cave region in the north-east with boulders and cave walls
+     * - Forest floor in the south-west
+     * - Serene pond in the meadow
+     * - Dark rocky cave region in the north-east
      * - Solid perimeter boundary wall (2 tiles thick)
-     * - A small cozy settlement clearing with wood floor & cabin wall
+     * - A small cozy settlement clearing with wood floor, cabin wall & roof
      */
     fun generatePlaceholderWorld() {
         val grassId = TileRegistry.getId("grass")
         val dirtId = TileRegistry.getId("dirt_path")
-        val stoneFloorId = TileRegistry.getId("stone_floor")
         val caveGroundId = TileRegistry.getId("cave_ground")
         val waterId = TileRegistry.getId("water")
-        val treeTrunkId = TileRegistry.getId("tree_trunk")
-        val treeTopId = TileRegistry.getId("tree_top")
-        val rockId = TileRegistry.getId("rock_boulder")
         val caveWallId = TileRegistry.getId("cave_wall")
         val borderWallId = TileRegistry.getId("border_wall")
         val woodFloorId = TileRegistry.getId("wooden_floor")
@@ -111,24 +113,7 @@ class GameMap(
             }
         }
 
-        // 4. Forest Region (South-West: x in 6..42, y in 6..42)
-        for (cy in 6..40 step 3) {
-            for (cx in 6..40 step 3) {
-                // Avoid placing directly on central dirt paths
-                if (cx in 44..52 || cy in 44..52) continue
-                val jitter = ((cx * 17 + cy * 31) % 3) - 1
-                val tx = cx + jitter
-                val ty = cy + jitter
-                if (tx in 3 until widthInTiles - 3 && ty in 3 until heightInTiles - 4) {
-                    // Tree Trunk on OBJECT layer (solid)
-                    setTile(TileLayer.OBJECT, tx, ty, treeTrunkId)
-                    // Tree Canopy on OBJECT layer directly above trunk (non-solid, sorts over player)
-                    setTile(TileLayer.OBJECT, tx, ty + 1, treeTopId)
-                }
-            }
-        }
-
-        // 5. Serene Pond / Lake in meadow (x in 20..32, y in 58..70)
+        // 4. Serene Pond / Lake in meadow (x in 20..32, y in 58..70)
         for (py in 58..68) {
             for (px in 22..34) {
                 val dx = px - 28
@@ -139,7 +124,7 @@ class GameMap(
             }
         }
 
-        // 6. Dark Cave Region (North-East: x in 60..90, y in 60..90)
+        // 5. Dark Cave Region (North-East: x in 60..90, y in 60..90)
         for (cy in 62..88) {
             for (cx in 62..88) {
                 setTile(TileLayer.GROUND, cx, cy, caveGroundId)
@@ -157,16 +142,8 @@ class GameMap(
                 }
             }
         }
-        // Scattered rock boulders in cave and near entrance
-        val rockCoords = listOf(
-            66 to 70, 78 to 80, 82 to 74, 84 to 84, 72 to 85, 68 to 78,
-            58 to 58, 59 to 59, 61 to 60
-        )
-        for ((rx, ry) in rockCoords) {
-            setTile(TileLayer.OBJECT, rx, ry, rockId)
-        }
 
-        // 7. Cozy Woodland Cabin in Clearing (Center-South: x in 56..64, y in 30..36)
+        // 6. Cozy Woodland Cabin in Clearing (Center-South: x in 56..64, y in 30..36)
         for (cy in 30..36) {
             for (cx in 56..64) {
                 setTile(TileLayer.FLOOR, cx, cy, woodFloorId)
@@ -186,5 +163,118 @@ class GameMap(
         for (rx in 56..64) {
             setTile(TileLayer.ROOF, rx, 37, roofId)
         }
+    }
+
+    data class NodeSpawnSpec(val nodeDefId: String, val tileX: Int, val tileY: Int)
+
+    /**
+     * Deterministic seeded placement of ~150-250 resource nodes across biomes.
+     */
+    fun generateNodePlacements(): List<NodeSpawnSpec> {
+        val specs = ArrayList<NodeSpawnSpec>(250)
+        val occupiedTiles = HashSet<Pair<Int, Int>>()
+
+        fun canPlace(tx: Int, ty: Int): Boolean {
+            if (tx < 3 || tx >= widthInTiles - 3 || ty < 3 || ty >= heightInTiles - 3) return false
+            // Check tile layers directly to avoid circular dependency
+            val chunk = getChunk(tx / chunkSize, ty / chunkSize) ?: return false
+            if (chunk.isSolidAt(tx % chunkSize, ty % chunkSize)) return false
+
+            // Avoid pond area
+            val dx = tx - 28
+            val dy = ty - 63
+            if (dx * dx * 1.0 + dy * dy * 1.5 < 38) return false
+
+            // Avoid central dirt paths intersection & spawn point (50, 46)
+            if (tx in 46..54 && ty in 42..54) return false
+
+            // Avoid cabin and doorway
+            if (tx in 54..66 && ty in 28..38) return false
+
+            // Avoid cave wall perimeter
+            if (tx in 60..90 && (ty in 60..64 || ty in 86..90)) return false
+            if (ty in 60..90 && (tx in 60..64 || tx in 86..90)) return false
+
+            return !occupiedTiles.contains(tx to ty)
+        }
+
+        // 1. Forest Region (South-West: x in 6..42, y in 6..42)
+        // Trees
+        for (cy in 6..42 step 3) {
+            for (cx in 6..42 step 3) {
+                val jx = ((cx * 17 + cy * 31) % 3) - 1
+                val jy = ((cx * 37 + cy * 19) % 3) - 1
+                val tx = cx + jx
+                val ty = cy + jy
+                if (canPlace(tx, ty)) {
+                    specs.add(NodeSpawnSpec("tree", tx, ty))
+                    occupiedTiles.add(tx to ty)
+                }
+            }
+        }
+
+        // Branch piles in forest clearings
+        for (cy in 5..43 step 4) {
+            for (cx in 7..41 step 4) {
+                val tx = cx + ((cy * 13) % 3) - 1
+                val ty = cy + ((cx * 23) % 3) - 1
+                if (canPlace(tx, ty)) {
+                    specs.add(NodeSpawnSpec("branch_pile", tx, ty))
+                    occupiedTiles.add(tx to ty)
+                }
+            }
+        }
+
+        // 2. Meadow Region (North-West & Center: x in 8..52, y in 46..86)
+        // Berry bushes
+        for (cy in 48..84 step 5) {
+            for (cx in 8..46 step 5) {
+                val tx = cx + ((cy * 11) % 3) - 1
+                val ty = cy + ((cx * 7) % 3) - 1
+                if (canPlace(tx, ty)) {
+                    specs.add(NodeSpawnSpec("berry_bush", tx, ty))
+                    occupiedTiles.add(tx to ty)
+                }
+            }
+        }
+
+        // Grass tufts
+        for (cy in 46..86 step 4) {
+            for (cx in 6..50 step 4) {
+                val tx = cx + ((cy * 29) % 3) - 1
+                val ty = cy + ((cx * 17) % 3) - 1
+                if (canPlace(tx, ty)) {
+                    specs.add(NodeSpawnSpec("grass_tuft", tx, ty))
+                    occupiedTiles.add(tx to ty)
+                }
+            }
+        }
+
+        // 3. Dark Cave & Rocky Area (North-East: x in 64..86, y in 64..86)
+        // Boulders
+        for (cy in 65..85 step 4) {
+            for (cx in 65..85 step 4) {
+                val tx = cx + ((cy * 19) % 3) - 1
+                val ty = cy + ((cx * 31) % 3) - 1
+                if (canPlace(tx, ty)) {
+                    specs.add(NodeSpawnSpec("boulder", tx, ty))
+                    occupiedTiles.add(tx to ty)
+                }
+            }
+        }
+
+        // Loose stones
+        for (cy in 58..86 step 4) {
+            for (cx in 56..86 step 4) {
+                val tx = cx + ((cy * 7) % 3) - 1
+                val ty = cy + ((cx * 13) % 3) - 1
+                if (canPlace(tx, ty)) {
+                    specs.add(NodeSpawnSpec("loose_stone", tx, ty))
+                    occupiedTiles.add(tx to ty)
+                }
+            }
+        }
+
+        return specs
     }
 }

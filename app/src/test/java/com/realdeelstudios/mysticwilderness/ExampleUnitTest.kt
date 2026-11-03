@@ -10,7 +10,19 @@ import org.junit.Test
  */
 class ExampleUnitTest {
   @Test
-  fun addition_isCorrect() {
-    assertEquals(4, 2 + 2)
+  fun fleksWorld_familyCreation() {
+    var fam: com.github.quillraven.fleks.Family? = null
+    val world = com.github.quillraven.fleks.configureWorld {
+      fam = com.github.quillraven.fleks.World.family {
+        all(
+          com.realdeelstudios.mysticwilderness.ecs.components.DroppedItemTag,
+          com.realdeelstudios.mysticwilderness.ecs.components.Position,
+          com.realdeelstudios.mysticwilderness.ecs.components.ItemStackComponent,
+          com.realdeelstudios.mysticwilderness.ecs.components.DroppedItemMetadata
+        )
+      }
+    }
+    assertNotNull(fam)
+    assertEquals(0, fam!!.numEntities)
   }
 }

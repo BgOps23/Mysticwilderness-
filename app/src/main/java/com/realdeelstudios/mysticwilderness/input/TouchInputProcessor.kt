@@ -14,6 +14,7 @@ class TouchInputProcessor : InputAdapter() {
     var isModalOpen: Boolean = false
     var onBackpackClicked: (() -> Unit)? = null
     var onGiveStarterItemsClicked: (() -> Unit)? = null
+    var onAdvanceDayClicked: (() -> Unit)? = null
 
     // Backpack & Starter item button hit areas
     var backpackX = 0f
@@ -23,6 +24,10 @@ class TouchInputProcessor : InputAdapter() {
     var giveStarterY = 0f
     var giveStarterW = 0f
     var giveStarterH = 0f
+    var advanceDayX = 0f
+    var advanceDayY = 0f
+    var advanceDayW = 0f
+    var advanceDayH = 0f
 
     private var joystickPointer: Int = -1
     private var actionPointer: Int = -1
@@ -56,9 +61,15 @@ class TouchInputProcessor : InputAdapter() {
 
         // Give starter items button
         giveStarterW = 200f * density
-        giveStarterH = 34f * density
+        giveStarterH = 32f * density
         giveStarterX = 24f
-        giveStarterY = height - 16f - 170f * density
+        giveStarterY = height - 16f - 180f * density
+
+        // Advance Day (+1 Day) button
+        advanceDayW = 200f * density
+        advanceDayH = 32f * density
+        advanceDayX = 24f
+        advanceDayY = giveStarterY - advanceDayH - 8f * density
     }
 
     private fun toUiY(screenY: Int): Float = Gdx.graphics.height.toFloat() - screenY.toFloat()
@@ -82,6 +93,15 @@ class TouchInputProcessor : InputAdapter() {
             touchY >= giveStarterY && touchY <= giveStarterY + giveStarterH
         ) {
             onGiveStarterItemsClicked?.invoke()
+            return true
+        }
+
+        // 2b. Check Advance Day (+1 Day) button if debug is enabled
+        if (isDebugOverlayEnabled &&
+            touchX >= advanceDayX && touchX <= advanceDayX + advanceDayW &&
+            touchY >= advanceDayY && touchY <= advanceDayY + advanceDayH
+        ) {
+            onAdvanceDayClicked?.invoke()
             return true
         }
 

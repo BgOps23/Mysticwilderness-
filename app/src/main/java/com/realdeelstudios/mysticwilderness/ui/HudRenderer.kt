@@ -40,11 +40,29 @@ class HudRenderer(
     var giveStarterBtnH = 0f
         private set
 
-    // Floating alert banner timer
-    var inventoryFullAlertTimer: Float = 0f
+    // "+1 Day" debug button bounds
+    var advanceDayBtnX = 0f
+        private set
+    var advanceDayBtnY = 0f
+        private set
+    var advanceDayBtnW = 0f
+        private set
+    var advanceDayBtnH = 0f
+        private set
+
+    // Floating alert banner message
+    var floatingMessageText: String = ""
+        private set
+    var floatingMessageTimer: Float = 0f
+        private set
 
     fun triggerInventoryFullAlert() {
-        inventoryFullAlertTimer = 2.0f
+        showFloatingMessage("Inventory full!")
+    }
+
+    fun showFloatingMessage(message: String) {
+        floatingMessageText = message
+        floatingMessageTimer = 2.0f
     }
 
     fun updateScreenDimensions(width: Float, height: Float, density: Float) {
@@ -58,9 +76,15 @@ class HudRenderer(
 
         // Give starter items button inside debug card
         giveStarterBtnW = 200f * (font.data.scaleX / 1.2f)
-        giveStarterBtnH = 32f * (font.data.scaleY / 1.2f)
+        giveStarterBtnH = 28f * (font.data.scaleY / 1.2f)
         giveStarterBtnX = 24f
-        giveStarterBtnY = height - 16f - 170f * (font.data.scaleY / 1.2f)
+        giveStarterBtnY = height - 16f - 195f * (font.data.scaleY / 1.2f)
+
+        // Advance day button inside debug card
+        advanceDayBtnW = 200f * (font.data.scaleX / 1.2f)
+        advanceDayBtnH = 28f * (font.data.scaleY / 1.2f)
+        advanceDayBtnX = 24f
+        advanceDayBtnY = giveStarterBtnY - advanceDayBtnH - 6f * (font.data.scaleY / 1.2f)
     }
 
     fun render(
@@ -71,10 +95,13 @@ class HudRenderer(
         chunksRendered: Int,
         totalChunks: Int,
         entityCount: Int,
+        visibleNodes: Int,
+        totalNodes: Int,
+        clockTimeFormatted: String,
         delta: Float
     ) {
-        if (inventoryFullAlertTimer > 0f) {
-            inventoryFullAlertTimer -= delta
+        if (floatingMessageTimer > 0f) {
+            floatingMessageTimer -= delta
         }
 
         // 1. Draw Floating Virtual Joystick if active
@@ -158,17 +185,27 @@ class HudRenderer(
 
         // 5. Draw Debug Overlay Telemetry when active
         if (isDebugEnabled) {
-            renderDebugOverlay(playerTileX, playerTileY, chunksRendered, totalChunks, entityCount)
+            renderDebugOverlay(
+                playerTileX = playerTileX,
+                playerTileY = playerTileY,
+                chunksRendered = chunksRendered,
+                totalChunks = totalChunks,
+                entityCount = entityCount,
+                visibleNodes = visibleNodes,
+                totalNodes = totalNodes,
+                clockTimeFormatted = clockTimeFormatted
+            )
         }
 
-        // 6. Draw "Inventory full" alert banner if active
-        if (inventoryFullAlertTimer > 0f) {
-            val alertW = 220f * (font.data.scaleX / 1.2f)
+        // 6. Draw Floating alert banner if active
+        if (floatingMessageTimer > 0f && floatingMessageText.isNotBlank()) {
+            glyphLayout.setText(font, floatingMessageText)
+            val alertW = (glyphLayout.width + 32f).coerceAtLeast(180f)
             val alertH = 38f * (font.data.scaleY / 1.2f)
             val alertX = (Gdx.graphics.width - alertW) / 2f
             val alertY = Gdx.graphics.height - 50f * Gdx.graphics.density
 
-            val alpha = (inventoryFullAlertTimer / 0.5f).coerceIn(0f, 1f)
+            val alpha = (floatingMessageTimer / 0.5f).coerceIn(0f, 1f)
             batch.setColor(0.85f, 0.20f, 0.20f, 0.90f * alpha)
             batch.draw(whitePixel, alertX, alertY, alertW, alertH)
             batch.setColor(Color.WHITE)
@@ -176,11 +213,9 @@ class HudRenderer(
             batch.draw(whitePixel, alertX, alertY + alertH - 2f, alertW, 2f)
 
             font.color = Color.WHITE
-            val alertMsg = "Inventory full!"
-            glyphLayout.setText(font, alertMsg)
             val textX = alertX + (alertW - glyphLayout.width) / 2f
             val textY = alertY + (alertH + glyphLayout.height) / 2f
-            font.draw(batch, alertMsg, textX, textY)
+            font.draw(batch, floatingMessageText, textX, textY)
         }
 
         batch.setColor(1f, 1f, 1f, 1f)
@@ -191,12 +226,15 @@ class HudRenderer(
         playerTileY: Int,
         chunksRendered: Int,
         totalChunks: Int,
-        entityCount: Int
+        entityCount: Int,
+        visibleNodes: Int,
+        totalNodes: Int,
+        clockTimeFormatted: String
     ) {
         val whitePixel = atlasProvider.getRegion("white_pixel")
         val margin = 16f
-        val cardWidth = 270f * (font.data.scaleX / 1.2f)
-        val cardHeight = 180f * (font.data.scaleY / 1.2f)
+        val cardWidth = 280f * (font.data.scaleX / 1.2f)
+        val cardHeight = 240f * (font.data.scaleY / 1.2f)
         val cardX = margin
         val cardY = Gdx.graphics.height - margin - cardHeight
 
@@ -216,43 +254,61 @@ class HudRenderer(
         val totalHeapMb = runtime.totalMemory() / (1024 * 1024)
 
         font.color = Color.WHITE
-        var textY = cardY + cardHeight - 16f
+        var textY = cardY + cardHeight - 14f
 
-        // Line 1: FPS & Frame Time
+        // Line 1: FPS & Frame Time (60 FPS verification)
         sb.setLength(0)
         sb.append("FPS: ").append(fps).append(" (").append(frameMs).append(" ms)")
         font.draw(batch, sb, cardX + 12f, textY)
-        textY -= 20f * (font.data.scaleY / 1.2f)
+        textY -= 18f * (font.data.scaleY / 1.2f)
 
-        // Line 2: Player Tile Position
+        // Line 2: Game Clock
+        sb.setLength(0)
+        sb.append("Clock: ").append(clockTimeFormatted)
+        font.draw(batch, sb, cardX + 12f, textY)
+        textY -= 18f * (font.data.scaleY / 1.2f)
+
+        // Line 3: Player Tile Position
         sb.setLength(0)
         sb.append("Player Tile: (").append(playerTileX).append(", ").append(playerTileY).append(")")
         font.draw(batch, sb, cardX + 12f, textY)
-        textY -= 20f * (font.data.scaleY / 1.2f)
+        textY -= 18f * (font.data.scaleY / 1.2f)
 
-        // Line 3: Chunks Rendered
+        // Line 4: Chunks Rendered
         sb.setLength(0)
         sb.append("Chunks: ").append(chunksRendered).append(" / ").append(totalChunks).append(" visible")
         font.draw(batch, sb, cardX + 12f, textY)
-        textY -= 20f * (font.data.scaleY / 1.2f)
+        textY -= 18f * (font.data.scaleY / 1.2f)
 
-        // Line 4: Entities count
+        // Line 5: Visible Nodes count (Amendment 6)
+        sb.setLength(0)
+        sb.append("Nodes Visible: ").append(visibleNodes).append(" / ").append(totalNodes)
+        font.draw(batch, sb, cardX + 12f, textY)
+        textY -= 18f * (font.data.scaleY / 1.2f)
+
+        // Line 6: Total Entities count
         sb.setLength(0)
         sb.append("Entities: ").append(entityCount)
         font.draw(batch, sb, cardX + 12f, textY)
-        textY -= 20f * (font.data.scaleY / 1.2f)
+        textY -= 18f * (font.data.scaleY / 1.2f)
 
-        // Line 5: Heap usage
+        // Line 7: Heap usage
         sb.setLength(0)
         sb.append("JVM Heap: ").append(usedHeapMb).append(" MB / ").append(totalHeapMb).append(" MB")
         font.draw(batch, sb, cardX + 12f, textY)
-        textY -= 28f * (font.data.scaleY / 1.2f)
+        textY -= 24f * (font.data.scaleY / 1.2f)
 
         // Button: Give Starter Items
         batch.setColor(0.18f, 0.70f, 0.40f, 0.90f)
         batch.draw(whitePixel, giveStarterBtnX, giveStarterBtnY, giveStarterBtnW, giveStarterBtnH)
         font.color = Color.WHITE
-        font.draw(batch, "+ Give Starter Items", giveStarterBtnX + 10f, giveStarterBtnY + giveStarterBtnH - 8f)
+        font.draw(batch, "+ Give Starter Items", giveStarterBtnX + 10f, giveStarterBtnY + giveStarterBtnH - 7f)
+
+        // Button: Advance Day (+1 Day)
+        batch.setColor(0.20f, 0.55f, 0.85f, 0.90f)
+        batch.draw(whitePixel, advanceDayBtnX, advanceDayBtnY, advanceDayBtnW, advanceDayBtnH)
+        font.color = Color.WHITE
+        font.draw(batch, "+ 1 Day (Advance Clock)", advanceDayBtnX + 10f, advanceDayBtnY + advanceDayBtnH - 7f)
     }
 
     override fun dispose() {

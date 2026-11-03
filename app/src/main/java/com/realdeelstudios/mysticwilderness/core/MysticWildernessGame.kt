@@ -19,11 +19,12 @@ class MysticWildernessGame : KtxGame<KtxScreen>() {
     override fun create() {
         Gdx.app.log("Game", "Starting Mystic Wilderness...")
 
-        // 1. Load tile & item definitions from assets JSON
         val tilesJson = Gdx.files.internal("tiles.json").readString()
         TileRegistry.load(tilesJson)
         val itemsJson = Gdx.files.internal("items.json").readString()
         com.realdeelstudios.mysticwilderness.data.ItemRegistry.load(itemsJson)
+        val nodesJson = Gdx.files.internal("nodes.json").readString()
+        com.realdeelstudios.mysticwilderness.data.NodeRegistry.load(nodesJson)
 
         // 2. Initialize graphics and atlas provider
         batch = SpriteBatch()

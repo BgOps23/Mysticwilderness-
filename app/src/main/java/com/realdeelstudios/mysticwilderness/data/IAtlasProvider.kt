@@ -21,6 +21,7 @@ class PlaceholderAtlasProvider : IAtlasProvider {
         createPlayerTextures()
         createUiTextures()
         createItemTextures()
+        createNodeTextures()
     }
 
     override fun getRegion(name: String): TextureRegion {
@@ -578,6 +579,217 @@ class PlaceholderAtlasProvider : IAtlasProvider {
             drawLine(3, 7, 12, 7)
         }
         register("item_bed", bedPixmap)
+    }
+
+    private fun createNodeTextures() {
+        // 1. Pine Tree (16x32: bottom 16px trunk, top 16-20px pine canopy)
+        val treePixmap = Pixmap(16, 32, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+
+            // Tree Trunk (rows 16 to 31, base at bottom)
+            setColor(Color.valueOf("4a2e18"))
+            fillRectangle(5, 16, 6, 16)
+            setColor(Color.valueOf("6e4524"))
+            fillRectangle(6, 16, 4, 15)
+            setColor(Color.valueOf("38200d"))
+            drawLine(5, 20, 5, 31)
+            drawLine(10, 22, 10, 31)
+
+            // Pine Foliage - Bottom Layer (rows 14 to 22)
+            setColor(Color.valueOf("145a32"))
+            fillTriangle(0, 22, 15, 22, 8, 12)
+            // Mid Layer (rows 8 to 16)
+            setColor(Color.valueOf("1e8449"))
+            fillTriangle(2, 16, 13, 16, 8, 6)
+            // Top Layer (rows 2 to 10)
+            setColor(Color.valueOf("27ae60"))
+            fillTriangle(4, 10, 11, 10, 8, 1)
+
+            // Pine needle highlights
+            setColor(Color.valueOf("2ecc71"))
+            drawPixel(7, 4); drawPixel(8, 3); drawPixel(6, 9); drawPixel(9, 8)
+            drawPixel(4, 15); drawPixel(11, 15); drawPixel(8, 14)
+            drawPixel(2, 21); drawPixel(13, 21); drawPixel(7, 20)
+        }
+        register("node_tree", treePixmap)
+
+        // 2. Tree Stump (16x16)
+        val stumpPixmap = Pixmap(16, 16, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+            // Trunk body
+            setColor(Color.valueOf("4a2e18"))
+            fillRectangle(4, 8, 8, 8)
+            setColor(Color.valueOf("6e4524"))
+            fillRectangle(5, 9, 6, 7)
+            // Cut flat surface at top
+            setColor(Color.valueOf("d4ac0d"))
+            fillRectangle(4, 6, 8, 3)
+            setColor(Color.valueOf("b7950b"))
+            drawRectangle(4, 6, 8, 3)
+            // Annular tree rings
+            setColor(Color.valueOf("7d6608"))
+            drawPixel(7, 7); drawPixel(8, 7)
+        }
+        register("node_tree_stump", stumpPixmap)
+
+        // 3. Stone Boulder (16x16)
+        val boulderPixmap = Pixmap(16, 16, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+            // Boulder base outline
+            setColor(Color.valueOf("2c3e50"))
+            fillCircle(8, 9, 6)
+            fillCircle(6, 10, 5)
+            fillCircle(10, 9, 5)
+            // Stone body
+            setColor(Color.valueOf("7f8c8d"))
+            fillCircle(8, 8, 5)
+            fillCircle(6, 9, 4)
+            fillCircle(10, 8, 4)
+            // Highlight facet
+            setColor(Color.valueOf("bdc3c7"))
+            drawPixel(6, 5); drawPixel(7, 5); drawPixel(8, 5); drawPixel(7, 6)
+            // Shading cracks
+            setColor(Color.valueOf("34495e"))
+            drawLine(5, 9, 8, 11)
+            drawLine(8, 11, 11, 10)
+        }
+        register("node_boulder", boulderPixmap)
+
+        // 4. Berry Bush (16x16)
+        val bushPixmap = Pixmap(16, 16, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+            // Foliage shrub
+            setColor(Color.valueOf("145a32"))
+            fillCircle(8, 8, 6)
+            fillCircle(5, 9, 4)
+            fillCircle(11, 9, 4)
+            setColor(Color.valueOf("27ae60"))
+            fillCircle(7, 7, 5)
+            fillCircle(10, 7, 3)
+            // Bright red berries
+            setColor(Color.valueOf("c0392b"))
+            fillCircle(5, 6, 2)
+            fillCircle(10, 6, 2)
+            fillCircle(7, 10, 2)
+            fillCircle(11, 10, 2)
+            setColor(Color.valueOf("e74c3c"))
+            drawPixel(5, 5); drawPixel(10, 5); drawPixel(7, 9); drawPixel(11, 9)
+        }
+        register("node_berry_bush", bushPixmap)
+
+        // 5. Berry Bush Depleted (16x16: bare twigs, no berries)
+        val bushDepletedPixmap = Pixmap(16, 16, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+            // Sparse olive leaves
+            setColor(Color.valueOf("196f3d"))
+            fillCircle(8, 9, 5)
+            setColor(Color.valueOf("229954"))
+            drawCircle(8, 9, 4)
+            // Bare branches
+            setColor(Color.valueOf("6e4524"))
+            drawLine(8, 14, 8, 8)
+            drawLine(8, 9, 5, 6)
+            drawLine(8, 9, 11, 6)
+            drawLine(5, 6, 3, 4)
+            drawLine(11, 6, 13, 5)
+        }
+        register("node_berry_bush_depleted", bushDepletedPixmap)
+
+        // 6. Branch Pile (16x16: fallen sticks on ground)
+        val branchPixmap = Pixmap(16, 16, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+            setColor(Color.valueOf("5c3a21"))
+            drawLine(2, 13, 14, 5)
+            drawLine(3, 4, 13, 13)
+            drawLine(7, 3, 9, 14)
+            setColor(Color.valueOf("8d5b35"))
+            drawLine(3, 13, 13, 5)
+            drawPixel(6, 8); drawPixel(9, 9)
+        }
+        register("node_branch_pile", branchPixmap)
+
+        // 7. Loose Stone (16x16: cluster of small pebbles)
+        val stonePixmap = Pixmap(16, 16, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+            setColor(Color.valueOf("37474f"))
+            fillRectangle(3, 10, 4, 3)
+            fillRectangle(9, 8, 4, 4)
+            fillRectangle(7, 12, 3, 2)
+            setColor(Color.valueOf("78909c"))
+            fillRectangle(3, 10, 3, 2)
+            fillRectangle(9, 8, 3, 3)
+            setColor(Color.valueOf("cfd8dc"))
+            drawPixel(3, 10); drawPixel(9, 8)
+        }
+        register("node_loose_stone", stonePixmap)
+
+        // 8. Grass Tuft (16x16: tall wild grass stalks)
+        val grassTuftPixmap = Pixmap(16, 16, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+            setColor(Color.valueOf("33691e"))
+            drawLine(4, 15, 3, 6)
+            drawLine(8, 15, 8, 4)
+            drawLine(12, 15, 13, 7)
+            setColor(Color.valueOf("689f38"))
+            drawLine(5, 15, 4, 7)
+            drawLine(9, 15, 9, 5)
+            drawLine(11, 15, 12, 8)
+            setColor(Color.valueOf("8bc34a"))
+            drawPixel(3, 6); drawPixel(8, 4); drawPixel(13, 7)
+        }
+        register("node_grass_tuft", grassTuftPixmap)
+
+        // 9. Target Reticle (16x16: bright corner indicators)
+        val reticlePixmap = Pixmap(16, 16, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+            setColor(Color.valueOf("f1c40f"))
+            // Top-left corner
+            drawLine(0, 0, 4, 0); drawLine(0, 0, 0, 4)
+            // Top-right corner
+            drawLine(11, 0, 15, 0); drawLine(15, 0, 15, 4)
+            // Bottom-left corner
+            drawLine(0, 15, 4, 15); drawLine(0, 11, 0, 15)
+            // Bottom-right corner
+            drawLine(11, 15, 15, 15); drawLine(15, 11, 15, 15)
+        }
+        register("target_reticle", reticlePixmap)
+
+        // 10. Health Bar Background (16x3)
+        val hbBgPixmap = Pixmap(16, 3, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("212121e0"))
+            fill()
+            setColor(Color.valueOf("000000ff"))
+            drawRectangle(0, 0, 16, 3)
+        }
+        register("health_bar_bg", hbBgPixmap)
+
+        // 11. Health Bar Fill (14x1)
+        val hbFillPixmap = Pixmap(14, 1, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("4caf50ff"))
+            fill()
+        }
+        register("health_bar_fill", hbFillPixmap)
+
+        // 12. Hit Spark (8x8)
+        val sparkPixmap = Pixmap(8, 8, Pixmap.Format.RGBA8888).apply {
+            setColor(Color.valueOf("00000000"))
+            fill()
+            setColor(Color.valueOf("ffffffdd"))
+            drawLine(4, 0, 4, 7)
+            drawLine(0, 4, 7, 4)
+            setColor(Color.valueOf("fff59d"))
+            fillRectangle(3, 3, 2, 2)
+        }
+        register("hit_spark", sparkPixmap)
     }
 
     override fun dispose() {

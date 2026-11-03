@@ -1,0 +1,174 @@
+[
+  {
+    "id": "tree",
+    "name": "Pine Tree",
+    "spriteRegion": "node_tree",
+    "depletedSpriteRegion": "node_tree_stump",
+    "maxHealth": 100,
+    "requiredToolType": "axe",
+    "requiredTier": 1,
+    "handDamage": 0,
+    "blocksMovement": true,
+    "colliderSize": {
+      "width": 10.0,
+      "height": 8.0,
+      "offsetX": 3.0,
+      "offsetY": 0.0
+    },
+    "sortAnchor": 0.0,
+    "drops": [
+      {
+        "itemId": "wood",
+        "minCount": 3,
+        "maxCount": 5,
+        "chance": 1.0
+      }
+    ],
+    "depletionBehavior": "stay_depleted_and_regrow",
+    "respawnGameSeconds": {
+      "min": 1440.0,
+      "max": 2160.0
+    },
+    "tags": ["tree", "wood", "foliage"]
+  },
+  {
+    "id": "boulder",
+    "name": "Stone Boulder",
+    "spriteRegion": "node_boulder",
+    "depletedSpriteRegion": null,
+    "maxHealth": 150,
+    "requiredToolType": "pickaxe",
+    "requiredTier": 1,
+    "handDamage": 0,
+    "blocksMovement": true,
+    "colliderSize": {
+      "width": 14.0,
+      "height": 10.0,
+      "offsetX": 1.0,
+      "offsetY": 1.0
+    },
+    "sortAnchor": 0.0,
+    "drops": [
+      {
+        "itemId": "stone",
+        "minCount": 3,
+        "maxCount": 5,
+        "chance": 1.0
+      }
+    ],
+    "depletionBehavior": "remove_and_respawn",
+    "respawnGameSeconds": {
+      "min": 2160.0,
+      "max": 2880.0
+    },
+    "tags": ["rock", "stone", "mineral"]
+  },
+  {
+    "id": "berry_bush",
+    "name": "Berry Bush",
+    "spriteRegion": "node_berry_bush",
+    "depletedSpriteRegion": "node_berry_bush_depleted",
+    "maxHealth": 10,
+    "requiredToolType": null,
+    "requiredTier": 0,
+    "handDamage": 5,
+    "blocksMovement": false,
+    "colliderSize": null,
+    "sortAnchor": 0.0,
+    "drops": [
+      {
+        "itemId": "berries",
+        "minCount": 2,
+        "maxCount": 4,
+        "chance": 1.0
+      }
+    ],
+    "depletionBehavior": "stay_depleted_and_regrow",
+    "respawnGameSeconds": {
+      "min": 720.0,
+      "max": 1440.0
+    },
+    "tags": ["bush", "berries", "forage"]
+  },
+  {
+    "id": "branch_pile",
+    "name": "Branch Pile",
+    "spriteRegion": "node_branch_pile",
+    "depletedSpriteRegion": null,
+    "maxHealth": 10,
+    "requiredToolType": null,
+    "requiredTier": 0,
+    "handDamage": 10,
+    "blocksMovement": false,
+    "colliderSize": null,
+    "sortAnchor": 0.0,
+    "drops": [
+      {
+        "itemId": "wood",
+        "minCount": 1,
+        "maxCount": 2,
+        "chance": 1.0
+      }
+    ],
+    "depletionBehavior": "remove_and_respawn",
+    "respawnGameSeconds": {
+      "min": 720.0,
+      "max": 1440.0
+    },
+    "tags": ["wood", "ground", "forage"]
+  },
+  {
+    "id": "loose_stone",
+    "name": "Loose Stone",
+    "spriteRegion": "node_loose_stone",
+    "depletedSpriteRegion": null,
+    "maxHealth": 10,
+    "requiredToolType": null,
+    "requiredTier": 0,
+    "handDamage": 10,
+    "blocksMovement": false,
+    "colliderSize": null,
+    "sortAnchor": 0.0,
+    "drops": [
+      {
+        "itemId": "stone",
+        "minCount": 1,
+        "maxCount": 1,
+        "chance": 1.0
+      }
+    ],
+    "depletionBehavior": "remove_and_respawn",
+    "respawnGameSeconds": {
+      "min": 720.0,
+      "max": 1440.0
+    },
+    "tags": ["stone", "ground", "forage"]
+  },
+  {
+    "id": "grass_tuft",
+    "name": "Grass Tuft",
+    "spriteRegion": "node_grass_tuft",
+    "depletedSpriteRegion": null,
+    "maxHealth": 5,
+    "requiredToolType": null,
+    "requiredTier": 0,
+    "handDamage": 5,
+    "blocksMovement": false,
+    "colliderSize": null,
+    "sortAnchor": 0.0,
+    "drops": [
+      {
+        "itemId": "plant_fiber",
+        "minCount": 1,
+        "maxCount": 2,
+        "chance": 1.0
+      }
+    ],
+    "depletionBehavior": "remove_and_respawn",
+    "respawnGameSeconds": {
+      "min": 720.0,
+      "max": 720.0
+    },
+    "tags": ["fiber", "ground", "forage"]
+  }
+]

@@ -213,9 +213,99 @@ gameMap.setTile(TileLayer.WALL, tileX, tileY, mossyId)
 
 ---
 
-## 6. Setup & Running Steps
+## 6. Phase 3: Resource Nodes & Gathering
+
+### `nodes.json` Schema & Full Example
+All resource nodes are data-driven via `app/src/main/assets/nodes.json`.
+
+```json
+[
+  {
+    "id": "tree",
+    "name": "Pine Tree",
+    "spriteRegion": "node_tree",
+    "depletedSpriteRegion": "node_tree_stump",
+    "maxHealth": 100,
+    "requiredToolType": "axe",
+    "requiredTier": 1,
+    "handDamage": 0,
+    "blocksMovement": true,
+    "colliderSize": {
+      "width": 10.0,
+      "height": 8.0,
+      "offsetX": 3.0,
+      "offsetY": 0.0
+    },
+    "sortAnchor": 0.0,
+    "drops": [
+      {
+        "itemId": "wood",
+        "minCount": 3,
+        "maxCount": 5,
+        "chance": 1.0
+      }
+    ],
+    "depletionBehavior": "stay_depleted_and_regrow",
+    "respawnGameSeconds": {
+      "min": 1440.0,
+      "max": 2160.0
+    },
+    "tags": ["tree", "wood", "foliage"]
+  }
+]
+```
+
+#### Fields Reference:
+- `id`: Unique string identifier (validated against duplicates).
+- `name`: Display name.
+- `spriteRegion`: Texture region name in the atlas for healthy state.
+- `depletedSpriteRegion`: (Optional) Texture region for depleted state (e.g. tree stump or bare berry bush).
+- `maxHealth`: Total hit points.
+- `requiredToolType`: Required tool type (`"axe"`, `"pickaxe"`), or `null` if bare hands are allowed.
+- `requiredTier`: Minimum tool tier required (default 0).
+- `handDamage`: Damage dealt per swing when bare hands or wrong tools are used; 0 if hands are not allowed.
+- `blocksMovement`: If `true`, the node occupies a solid tile in the world and blocks pathing. Note: `colliderSize` is an optional sub-tile specification, but tile-blocking nodes participate directly in `GameMap.isTileSolid` via `NodeSpatialIndex`.
+- `sortAnchor`: Y-offset in pixels for depth-sorting in the Y-sorted render pass.
+- `drops`: List of drop specifications:
+  - `itemId`: String ID of item in `items.json` (validated on load).
+  - `minCount` & `maxCount`: Range of items dropped (must satisfy $min \le max$).
+  - `chance`: Float between 0.0 and 1.0.
+- `depletionBehavior`:
+  - `"stay_depleted_and_regrow"`: Transitions to depleted sprite (e.g., tree stump, bare bush) with collision removed, regrows after respawn timer.
+  - `"remove_and_respawn"`: Disappears from the map with collision removed, reappears when respawn timer triggers.
+- `respawnGameSeconds`: Object with `{ "min": Float, "max": Float }` in game seconds.
+
+### How to Add a New Node
+1. Open `app/src/main/assets/nodes.json` and append a new node object adhering to the schema above.
+2. Ensure any referenced `itemId` exists in `items.json`.
+3. Register the `spriteRegion` (and optional `depletedSpriteRegion`) in `IAtlasProvider` / `PlaceholderAtlasProvider`.
+4. Access via `NodeRegistry.get("my_node_id")`.
+
+### `GatherLogic` Rules
+- Evaluates active tool held in the selected hotbar slot.
+- **Damage Formula**:
+  - If `requiredToolType` matches active tool AND tool tier $\ge$ `requiredTier`: $\text{damage} = 10 \times \text{tool.power}$.
+  - Else if `handDamage > 0`: $\text{damage} = \text{handDamage}$.
+  - Else: $\text{damage} = 0$, throttled floating feedback message shown (e.g. `"Needs an axe"` or `"Needs a better axe"`).
+- **Swing Interval**: 0.5s cooldown between consecutive swings.
+- **Harvest Resolution**:
+  - On depletion, drops are rolled and added to inventory.
+  - If inventory is full, remaining items spill onto the ground as floating world items with magnet pickup physics.
+  - Dispatches `GatherEvent(nodeId, itemId, count, toolType)` on `GatherEventBus`.
+
+### `GameClock` API Summary
+- 1 game day = 720 seconds (12 real minutes).
+- Simulation-driven: advances only during fixed-step ticks when the inventory modal is closed.
+- `currentDay`: 1-based day counter (`(totalGameSeconds / 720).toInt() + 1`).
+- `timeOfDaySeconds`: Elapsed seconds in current day (0..720s).
+- `advanceByDays(days)`: Advances clock forward (accessible via debug `+1 Day` button).
+- `toSaveData()` / `fromSaveData()`: Clean serialization.
+
+---
+
+## 7. Setup & Running Steps
 
 1. **Prerequisites**: Android SDK with API 36, Kotlin 2.2.10, Gradle.
 2. **Build**: Run `gradle assembleDebug` or use AI Studio `compile_applet`.
 3. **Run**: Launch on an Android device or streaming emulator. Orientation automatically locks to landscape with immersive sticky mode and notch/cutout expansion.
-4. **Debug**: Toggle the `DBG: ON/OFF` button in the top-right corner to inspect FPS, tile coordinates, chunk counts, entity counts, heap usage, or press `+ Give Starter Items` to populate the backpack with testing stacks.
+4. **Debug**: Toggle the `DBG: ON/OFF` button in the top-right corner to inspect FPS, tile coordinates, chunk counts, visible nodes, entity counts, heap usage, or press `+ Give Starter Items` to populate tools/resources, or `+ 1 Day (Advance Clock)` to test day rollover and node respawning.

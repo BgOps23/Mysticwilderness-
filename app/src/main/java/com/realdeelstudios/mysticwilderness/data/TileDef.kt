@@ -32,7 +32,7 @@ object TileRegistry {
             idToNumeric[tileDef.id] = shortId
             solidFlags.add(tileDef.solid)
         }
-        Gdx.app.log("TileRegistry", "Loaded ${defs.size} tile definitions from JSON.")
+        Gdx.app?.log("TileRegistry", "Loaded ${defs.size} tile definitions from JSON.")
     }
 
     fun getId(nameId: String): Short = idToNumeric[nameId] ?: EMPTY_TILE_ID
