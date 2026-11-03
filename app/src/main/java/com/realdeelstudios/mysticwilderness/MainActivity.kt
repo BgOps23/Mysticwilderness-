@@ -3,9 +3,6 @@ package com.realdeelstudios.mysticwilderness
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
 import com.realdeelstudios.mysticwilderness.core.MysticWildernessGame
@@ -31,22 +28,6 @@ class MainActivity : AndroidApplication() {
         }
 
         initialize(MysticWildernessGame(), config)
-
-        // 3. Ensure window insets controller is applied cleanly after view hierarchy is attached
-        window.decorView.post {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-            insetsController.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            insetsController.hide(WindowInsetsCompat.Type.systemBars())
-        }
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-            insetsController.hide(WindowInsetsCompat.Type.systemBars())
-        }
     }
 }
+
